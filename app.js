@@ -18,48 +18,8 @@ const server = http.createServer(async (req, res) => {
 
 	if (url === "/" && method === "GET") {
 		sendHtmlFile(res, "index.html")
-		/*
-		const filePath = path.join(__dirname, "index.html");
-
-
-		const isFileAccessible = await checkFileAndHandleErrors(filePath, res)
-		if (isFileAccessible) {
-
-			res.writeHead(200, { "Content-Type": "text/html" });
-			const readableStream = fs.createReadStream(filePath);
-
-			readableStream.on('error', (streamError) => {
-				console.error("Stream Error:", streamError);
-
-				if (!res.headersSent) {
-					res.writeHead(500, { "Content-Type": "text/plain" });
-				}
-				if (!res.writableEnded) {
-					res.end("Server Error during file stream.");
-				}
-			});
-			readableStream.pipe(res);
-		}
-		*/
 	} else if (url === "/request" && (method === "POST" || method === "PUT")) {
-		res.writeHead(200, { "Content-Type": "text/plain" });
-		let body = '';
-		req.on("data", chunk => {
-			body += chunk.toString();
-		});
-		req.on("end", () => {
-			console.log("Received data for /request:", body);
-			res.end("Received and processed: " + body.toUpperCase());
-		});
-		req.on("error", (reqError) => {
-			console.error("Request Stream Error:", reqError);
-			if (!res.headersSent) {
-				res.writeHead(500, { "Content-Type": "text/plain" });
-			}
-			if (!res.writableEnded) {
-				res.end("Error processing request data.");
-			}
-		});
+		requestHandler(req, res, url, 200, "text/plain")
 	} else if (url === "/about" && method === "GET") {
 		sendHtml(res, pageData(url), 200)
 	} else {
