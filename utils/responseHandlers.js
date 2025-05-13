@@ -21,7 +21,7 @@ function sendHtml(res, htmlContent, statusCode = 200) {
 }
 
 async function sendHtmlFile(res, file, statusCode = 200) {
-	const filePath = path.join(__dirname, file);
+	const filePath = path.join(__dirname, "../", file);
 
 	const isFileAccessible = await checkFileAndHandleErrors(filePath, res)
 	if (isFileAccessible) {
@@ -87,6 +87,7 @@ module.exports =  {
 	sendResponse, 
 	sendText, 
 	sendHtml, 
+	sendHtmlFile,
 	sendJson, 
 	handleNotFound, 
 	handleServerError 

@@ -7,6 +7,7 @@ const path = require("node:path");
 
 const checkFileAndHandleErrors = require("./utils/checkFileAndHandleErrors");
 const { sendText, sendHtml, sendHtmlFile, sendJson, handleNotFound, handleServerError } = require("./utils/responseHandlers");
+const { requestHandler } = require("./utils/requestHandlers");
 const pageData = require("./utils/pageDataDemo");
 
 
@@ -16,7 +17,10 @@ const server = http.createServer(async (req, res) => {
 	console.log(`Request: ${method} ${url}`);
 
 	if (url === "/" && method === "GET") {
+		sendHtmlFile(res, "index.html")
+		/*
 		const filePath = path.join(__dirname, "index.html");
+
 
 		const isFileAccessible = await checkFileAndHandleErrors(filePath, res)
 		if (isFileAccessible) {
@@ -36,7 +40,7 @@ const server = http.createServer(async (req, res) => {
 			});
 			readableStream.pipe(res);
 		}
-
+		*/
 	} else if (url === "/request" && (method === "POST" || method === "PUT")) {
 		res.writeHead(200, { "Content-Type": "text/plain" });
 		let body = '';
