@@ -1,0 +1,14 @@
+{
+  "name": "Containerized Node Server Demonstration",
+  "version": "1.0.0",
+  "description": "A low level http(s) server example with htmx templating. This is a project for exploring the core node modules.",
+  "main": "app.js",
+  "scripts": {
+		"start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "ashx3s",
+  "license": "ISC",
+  "type": "commonjs"
+}
