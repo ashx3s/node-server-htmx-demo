@@ -6,27 +6,8 @@ const fsPromise = require("node:fs/promises");
 const path = require("node:path");
 
 const checkFileAndHandleErrors = require("./utils/checkFileAndHandleErrors");
-
-const pageData = (route) => {
-	return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Page for ${route}</title>
-</head>
-<body>
-		<main>
-				<h1>Hello World</h1>
-				<p>The route is ${route}</p>
-		</main>
-</body>
-</html>
-`;
-};
-
-
+const { sendText, sendHtml, sendHtmlFile, sendJson, handleNotFound, handleServerError } = require("./utils/responseHandlers");
+const pageData = require("./utils/pageDataDemo");
 
 
 const server = http.createServer(async (req, res) => {
@@ -39,10 +20,13 @@ const server = http.createServer(async (req, res) => {
 
 		const isFileAccessible = await checkFileAndHandleErrors(filePath, res)
 		if (isFileAccessible) {
+
 			res.writeHead(200, { "Content-Type": "text/html" });
 			const readableStream = fs.createReadStream(filePath);
+
 			readableStream.on('error', (streamError) => {
 				console.error("Stream Error:", streamError);
+
 				if (!res.headersSent) {
 					res.writeHead(500, { "Content-Type": "text/plain" });
 				}
@@ -73,15 +57,11 @@ const server = http.createServer(async (req, res) => {
 			}
 		});
 	} else if (url === "/about" && method === "GET") {
-		res.writeHead(200, { "Content-Type": "text/html" });
-		res.write(pageData(url));
-		res.end();
+		sendHtml(res, pageData(url), 200)
 	} else {
-		res.writeHead(404, { "Content-Type": "text/html" });
-		res.end("<h1>404 Page Not Found</h1><p>Sorry, the page you are looking for does not exist.</p>");
+		handleNotFound(url)
 	}
-});
-
+})
 server.listen(8000, () => {
 	console.log(`Listening on http://localhost:8000`);
 })
