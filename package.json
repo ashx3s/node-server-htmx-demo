@@ -4,11 +4,17 @@
   "description": "A low level http(s) server example with htmx templating. This is a project for exploring the core node modules.",
   "main": "app.js",
   "scripts": {
-		"start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "serve": "node app.js",
+    "test": "mocha"
   },
   "keywords": [],
   "author": "ashx3s",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "htmx.org": "^1.9.12"
+  },
+  "devDependencies": {
+    "mocha": "^11.2.2"
+  }
 }
