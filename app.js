@@ -26,8 +26,14 @@ const server = http.createServer(async (req, res) => {
 	} else if (url === "/contact" && method === "GET") {
 		sendHtmlFile(res, "contact.html");
 	} else if (url === "/contact" && method === "POST") { 
-		console.log("Raw Headers: ", req.rawHeaders);
-		req.write(chunk, () => console.log(chunk))
+		let body = ""
+		req.on("data", (chunk) => {
+			body += chunk.toString()
+		})
+		req.on("end", () => {
+			console.log(req.headers['content-type'])
+			console.log(body)
+		})
 	} else {
 		handleNotFound(res, "Requested Page")
 	}
