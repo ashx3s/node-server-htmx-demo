@@ -7,14 +7,14 @@ const path = require("node:path");
 
 const checkFileAndHandleErrors = require("./utils/checkFileAndHandleErrors");
 const { sendText, sendHtml, sendHtmlFile, sendJson, handleNotFound, handleServerError } = require("./utils/responseHandlers");
-const { requestHandler } = require("./utils/requestHandlers");
+const  { logRequestStreamData, logDataParsedWithSearchParams, logDataParsedWithQueryString } = require("./utils/logRequests")
 const pageData = require("./utils/pageDataDemo");
-
 
 
 const server = http.createServer(async (req, res) => {
 	const url = req.url;
 	const method = req.method;
+
 	console.log(`Request: ${method} ${url}`);
 
 	if (url === "/" && method === "GET") {
@@ -26,15 +26,10 @@ const server = http.createServer(async (req, res) => {
 	} else if (url === "/contact" && method === "GET") {
 		sendHtmlFile(res, "contact.html");
 	} else if (url === "/contact" && method === "POST") { 
-		let body = ""
-		req.on("data", (chunk) => {
-			body += chunk.toString()
-		})
-		req.on("end", () => {
-			console.log(req.headers['content-type'])
-			console.log(body)
-		})
-	} else {
+		//logRequestStreamData(req, res);	
+		logDataParsedWithSearchParams(req, res, ["name", "message"]);
+		//logDataParsedWithQueryString(req, res);
+		} else {
 		handleNotFound(res, "Requested Page")
 	}
 })
