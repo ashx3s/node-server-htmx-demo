@@ -1,7 +1,6 @@
 "use strict";
 const fs = require("node:fs");
 const path = require("node:path");
-
 const checkFileAndHandleErrors = require("./checkFileAndHandleErrors");
 
 function sendResponse (res, statusCode, contentType, body) {
@@ -26,7 +25,7 @@ async function sendHtmlFile(res, file, statusCode = 200) {
 	const isFileAccessible = await checkFileAndHandleErrors(filePath, res)
 	if (isFileAccessible) {
 
-		res.writeHead(200, { "Content-Type": "text/html" });
+		res.writeHead(statusCode, { "Content-Type": "text/html" });
 		const readableStream = fs.createReadStream(filePath);
 
 		readableStream.on('error', (streamError) => {
@@ -62,10 +61,10 @@ function handleNotFound(res, resourceName = "Page") {
 	const body = `
 		<header>
 			<h1>404: Not Found</h1>
-			<p>The ${resourceName,toLowerCase()} cannot be found.</p>
+			<p>The ${resourceName.toLowerCase()} cannot be found.</p>
 		</header>
 	`
-	sendHtml(body)
+	sendHtml(res, body, 404)
 }
 
 function handleServerError(res, err, message = "Internal Server Error") {

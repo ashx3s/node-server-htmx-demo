@@ -28,8 +28,8 @@ const server = http.createServer(async (req, res) => {
 	} else if (url === "/contact" && method === "POST") { 
 		console.log("Raw Headers: ", req.rawHeaders);
 		req.write(chunk, () => console.log(chunk))
-	}else {
-		handleNotFound(url)
+	} else {
+		handleNotFound(res, "Requested Page")
 	}
 })
 server.listen(8000, () => {
