@@ -1,0 +1,139 @@
+"use strict"; 
+const querystring = require("node:querystring");
+
+const MAX_BODY_SIZE = 1e6 // 1MB
+
+function checkAndHandleOversizedBody(req, res, currentBodyLength) {
+	if (currentBodyLength >= MAX_BODY_SIZE) {
+		console.error("request body too large")
+		if (!res.headersSent) {
+			res.writeHead(413, {"Content-Type": "text/plain"});
+			res.end("Request body too large")
+		} else {
+			console.error("Headers already sent, cannot send 413 for oversided body")
+		}
+		req.destroy();
+		return true
+	}
+	return false
+}
+
+
+
+function attachRequestStreamErrorHandler(req, res, contextMessage="Server Error") {
+	if (!req || typeof req.on !== "function") {
+		console.error("Invalid reques object passed to handleRequestStreamError")
+		if (!res || typeof res.writeHead !== "function") {
+			console.error("Invalid response object passed to handleRequestStreamError")
+			res.writeHead(400, {"Content-Type": "text/plain"})
+			res.end("Internal Server Configuration Error");
+		}
+		return
+	}
+	if (!res || typeof res.writeHead !== "fuction") {
+		console.error("Invalid response object passed to handleRequestStreamError")
+		return
+	}
+	req.on("error", (err) => {
+		console.error(`[${contextMessage} Error: `, err)
+		if (!res.headersSent) {
+			res.writeHead(500, {"Content-Type": "text/plain"})
+			res.end("Server error processing your request");
+		} else {
+			console.error("Headers already sent, error not sent to client");
+			if (req.socket && req.socket.destroy) req.socket.destroy();
+		}
+	})
+}
+
+function logRequestStreamData(req, res) {
+	if (!req || typeof req.on !== "function" || !res || typeof res.writeHead !== "function") {
+		console.error("[Error]: Invalid request or response object passed");
+		if (res && typeof res.writeHead === "function") {
+			res.writeHead(500, {"Content-type": "text/plain"});
+			res.end("Internal server configuration Error!");
+		}
+	}
+	attachRequestStreamErrorHandler(req, res, "logRequestStreamData")
+
+	let body = ""
+	req.on("data", (chunk) => {
+		if (req.destroyed) return;
+
+		body += chunk.toString()
+		if (checkAndHandleOversizedBody(req, res, body.length)) return;
+	})
+
+	req.on("end", () => {
+		if (req.destroyed) {
+			console.log("Request process aborted")
+			return;
+		}
+		console.log(req.headers['content-type'])
+		console.log("Raw body length: ", body.length)
+		console.log("Raw body: ", body)
+
+		res.end("Contact form data received and logged in raw form.")
+	})
+
+}
+
+function logDataParsedWithSearchParams(req, res, inputParams) {
+	// [docs](https://nodejs.org/docs/latest-v22.x/api/url.html#class-urlsearchparams)
+	// TODO: validate input params
+	// TODO: implement max body sized limit
+	const outputData = [];
+	let body = ''
+	req.on("data", (chunk) => {
+		body += chunk.toString()
+	})
+	req.on("end", () => {
+		console.log("Content-Type Header: ", req.headers["content-type"]);
+		console.log("Raw body: ", body);
+		if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
+			const params = new URLSearchParams(body);
+			for (const param of inputParams) {
+				console.log(param, params.get(param))
+				outputData.push({[param]: params.get(param)})
+			}
+			res.writeHead(200, {"Content-Type": "text/plain"})
+			res.end("Contact form data received and parsed using URLSearchParams");
+
+		} else {
+			res.writeHead(400, { "Content-Type": "text/plain" });
+			res.end("Unsupported content type for parsing with URLSearchParams");
+		}
+		console.log("This array is able to be exported: ", outputData)
+	})
+	// TODO: Add error handler req.on
+}
+
+function logDataParsedWithQueryString(req, res) {
+	// [docs](https://nodejs.org/docs/latest-v22.x/api/querystring.html)
+	// TODO: implement max body sized limit
+	let body = '';
+	req.on("data", (chunk) => {
+		body += chunk.toString();
+	}) 
+	req.on("end", () => {
+		try {
+			// TODO: check headers before passing
+			const rawData = querystring.parse(body);
+			const parsedData = { ...rawData }
+			console.log(parsedData)
+			res.writeHead(200, {"Content-Type": "application/json"})
+			res.end(JSON.stringify(parsedData))
+		} catch (e) {
+			console.error("Error Parsing Data: ", e)
+			res.writeHead(400, {"Content-Type": "text/plain"})
+			res.end("Bad request, invalid data");
+		}
+	})
+	req.on("error", (err) => {
+		console.error("Server Error: ", err)
+		res.writeHead(500, {"Content-Type": "text/plain"})
+		res.end("Server Error. It's not you. it's us");
+	})
+}
+
+module.exports = { logRequestStreamData, logDataParsedWithSearchParams, logDataParsedWithQueryString }
