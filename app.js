@@ -11,6 +11,7 @@ const { requestHandler } = require("./utils/requestHandlers");
 const pageData = require("./utils/pageDataDemo");
 
 
+
 const server = http.createServer(async (req, res) => {
 	const url = req.url;
 	const method = req.method;
@@ -22,7 +23,12 @@ const server = http.createServer(async (req, res) => {
 		requestHandler(req, res, url, 200, "text/plain")
 	} else if (url === "/about" && method === "GET") {
 		sendHtml(res, pageData(url), 200)
-	} else {
+	} else if (url === "/contact" && method === "GET") {
+		sendHtmlFile(res, "contact.html");
+	} else if (url === "/contact" && method === "POST") { 
+		console.log("Raw Headers: ", req.rawHeaders);
+		req.write(chunk, () => console.log(chunk))
+	}else {
 		handleNotFound(url)
 	}
 })
