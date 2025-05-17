@@ -27,8 +27,8 @@ const server = http.createServer(async (req, res) => {
 		sendHtmlFile(res, "contact.html");
 	} else if (url === "/contact" && method === "POST") { 
 		//logRequestStreamData(req, res);	
-		logDataParsedWithSearchParams(req, res, ["name", "message"]);
-		//logDataParsedWithQueryString(req, res);
+		//logDataParsedWithSearchParams(req, res,["name", "subject", "message"] );
+		logDataParsedWithQueryString(req, res);
 		} else {
 		handleNotFound(res, "Requested Page")
 	}
